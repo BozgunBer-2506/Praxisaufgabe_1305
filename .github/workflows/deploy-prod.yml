@@ -1,0 +1,47 @@
+name: Deploy to Production
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Slack - Deployment started
+        run: |
+          curl -s -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+            -H 'Content-type: application/json' \
+            --data "{\"text\":\"🚀 *${{ github.workflow }}* gestartet von *${{ github.actor }}* für Tag \`${{ github.ref_name }}\`\"}"
+
+      - name: Deploy to all Prod EC2 instances
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+
+          for IP in ${{ secrets.EC2_IPS_PROD }}; do
+            echo "Deploying to $IP..."
+            ssh-keyscan -H "$IP" >> ~/.ssh/known_hosts 2>/dev/null
+            scp -i /tmp/deploy_key frontend/index.html ubuntu@"$IP":/var/www/html/index.html
+          done
+
+          rm -f /tmp/deploy_key
+
+      - name: Slack - Deployment successful
+        if: success()
+        run: |
+          curl -s -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+            -H 'Content-type: application/json' \
+            --data "{\"text\":\"✅ *${{ github.workflow }}* erfolgreich auf allen Prod-Servern! Ausgelöst von *${{ github.actor }}*\"}"
+
+      - name: Slack - Deployment failed
+        if: failure()
+        run: |
+          curl -s -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+            -H 'Content-type: application/json' \
+            --data "{\"text\":\"❌ *${{ github.workflow }}* fehlgeschlagen auf Prod! Ausgelöst von *${{ github.actor }}*\"}"

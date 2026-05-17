@@ -1,0 +1,44 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Slack - Deployment started
+        run: |
+          curl -s -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+            -H 'Content-type: application/json' \
+            --data "{\"text\":\"🚀 *${{ github.workflow }}* gestartet von *${{ github.actor }}* auf Branch \`main\`\"}"
+
+      - name: Deploy via SCP to Staging
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_IP_STAGING }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "."
+          target: /var/www/html
+          strip_components: 1
+
+      - name: Slack - Deployment successful
+        if: success()
+        run: |
+          curl -s -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+            -H 'Content-type: application/json' \
+            --data "{\"text\":\"✅ *${{ github.workflow }}* erfolgreich abgeschlossen von *${{ github.actor }}*\"}"
+
+      - name: Slack - Deployment failed
+        if: failure()
+        run: |
+          curl -s -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+            -H 'Content-type: application/json' \
+            --data "{\"text\":\"❌ *${{ github.workflow }}* fehlgeschlagen! Ausgelöst von *${{ github.actor }}*\"}"
