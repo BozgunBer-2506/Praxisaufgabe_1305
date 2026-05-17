@@ -25,7 +25,7 @@ jobs:
           host: ${{ secrets.EC2_IP_STAGING }}
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "."
+          source: "frontend/index.html"
           target: /var/www/html
           strip_components: 1
 
