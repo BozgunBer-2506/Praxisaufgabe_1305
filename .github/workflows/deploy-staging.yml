@@ -19,6 +19,14 @@ jobs:
             -H 'Content-type: application/json' \
             --data "{\"text\":\"🚀 *${{ github.workflow }}* gestartet von *${{ github.actor }}* auf Branch \`main\`\"}"
 
+      - name: Fix permissions on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_IP_STAGING }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: sudo chown -R ubuntu:ubuntu /var/www/html
+
       - name: Deploy via SCP to Staging
         uses: appleboy/scp-action@v0.1.7
         with:
