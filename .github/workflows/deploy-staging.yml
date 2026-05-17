@@ -28,6 +28,7 @@ jobs:
           source: "frontend/index.html"
           target: /var/www/html
           strip_components: 1
+          overwrite: true
 
       - name: Slack - Deployment successful
         if: success()
