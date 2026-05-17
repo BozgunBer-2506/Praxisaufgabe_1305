@@ -1,50 +1,32 @@
-# Praxisaufgabe 1305 - CI/CD Pipeline mit Slack-Benachrichtigung
+# Praxisaufgabe 1305 - CI/CD Pipeline mit Slack
 
-Dieses Repository enthält zwei GitHub Actions Workflows für automatisierte Deployments auf EC2-Server mit Slack-Benachrichtigungen.
+Zwei GitHub Actions Workflows für automatisierte Deployments auf EC2 mit Slack-Benachrichtigung.
 
-## Projektstruktur
+## Was ist hier drin
 
 ```
-.github/
-  workflows/
-    deploy-staging.yml   # Staging-Pipeline
-    deploy-prod.yml      # Production-Pipeline
-frontend/
-  index.html             # Statische Webseite
+.github/workflows/deploy-staging.yml   -> Staging-Pipeline
+.github/workflows/deploy-prod.yml      -> Production-Pipeline
+frontend/index.html                    -> die Webseite
 ```
 
-## Workflows
+## Wie funktioniert es
 
-### Staging (`deploy-staging.yml`)
+**Staging** läuft automatisch bei jedem Push auf `main`. Der Workflow schickt eine Startnachricht an Slack, kopiert `frontend/index.html` per SCP auf den Server und meldet dann Erfolg oder Fehler.
 
-- **Trigger:** Jeder Push auf den `main`-Branch
-- **Ablauf:**
-  1. Slack-Startmeldung mit `github.actor` und `github.workflow`
-  2. Berechtigungen auf dem Server setzen (`sudo chown`)
-  3. `frontend/index.html` per SCP auf den Staging-Server übertragen
-  4. Slack-Erfolgsmeldung oder Slack-Fehlermeldung je nach Ergebnis
+**Production** wird nur ausgelöst, wenn ein Tag wie `v1.0.0` gepusht wird. Dann läuft ein Bash-Loop über alle Production-IPs und deployed auf jeden Server einzeln.
 
-### Production (`deploy-prod.yml`)
-
-- **Trigger:** Push eines Git-Tags mit `v*` (z.B. `v1.0.0`)
-- **Ablauf:**
-  1. Slack-Startmeldung
-  2. Bash-Schleife über alle IPs in `EC2_IPS_PROD`
-  3. SSH-Key schreiben, `ssh-keyscan` und `scp` für jeden Server
-  4. Slack-Erfolgsmeldung oder Slack-Fehlermeldung je nach Ergebnis
-
-### Production-Deployment auslösen
-
+Production manuell starten:
 ```bash
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
-## GitHub Secrets
+## Secrets die gesetzt werden müssen
 
-| Secret | Beschreibung |
-|--------|-------------|
-| `SSH_PRIVATE_KEY` | Privater SSH-Schlüssel für den Zugriff auf die EC2-Instanzen |
-| `EC2_IP_STAGING` | IP-Adresse des Staging-Servers |
-| `EC2_IPS_PROD` | IP-Adressen der Production-Server (leerzeichen-getrennt) |
-| `SLACK_WEBHOOK_URL` | Webhook-URL für Slack-Benachrichtigungen |
+| Secret | Wozu |
+|--------|------|
+| `SSH_PRIVATE_KEY` | SSH-Zugriff auf die Server |
+| `EC2_IP_STAGING` | IP vom Staging-Server |
+| `EC2_IPS_PROD` | IPs der Prod-Server, leerzeichen-getrennt |
+| `SLACK_WEBHOOK_URL` | für die Slack-Nachrichten |
