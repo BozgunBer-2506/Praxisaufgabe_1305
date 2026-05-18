@@ -29,8 +29,8 @@ jobs:
           for IP in ${{ secrets.EC2_IPS_PROD }}; do
             echo "Deploying to $IP..."
             ssh-keyscan -H "$IP" >> ~/.ssh/known_hosts 2>/dev/null
-            ssh -i /tmp/deploy_key ubuntu@"$IP" "sudo chown -R ubuntu:ubuntu /var/www/html"
-            scp -i /tmp/deploy_key frontend/index.html ubuntu@"$IP":/var/www/html/index.html
+            ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no ubuntu@"$IP" "sudo chown -R ubuntu:ubuntu /var/www/html"
+            scp -i /tmp/deploy_key -o StrictHostKeyChecking=no frontend/index.html ubuntu@"$IP":/var/www/html/index.html
           done
 
           rm -f /tmp/deploy_key
