@@ -17,7 +17,7 @@ jobs:
         run: |
           curl -s -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
             -H 'Content-type: application/json' \
-            --data "{\"text\":\"🚀 *${{ github.workflow }}* gestartet von *${{ github.actor }}* für Tag \`${{ github.ref_name }}\`\"}"
+            --data "{\"text\":\"🚀 Production-Pipeline gestartet\n👤 Gestartet von: *${{ github.actor }}*\n⚙️ Workflow: ${{ github.workflow }}\n🏷️ Tag: ${{ github.ref_name }}\"}"
 
       - name: Deploy to all Prod EC2 instances
         run: |
@@ -40,11 +40,11 @@ jobs:
         run: |
           curl -s -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
             -H 'Content-type: application/json' \
-            --data "{\"text\":\"✅ *${{ github.workflow }}* erfolgreich auf allen Prod-Servern! Ausgelöst von *${{ github.actor }}*\"}"
+            --data "{\"text\":\"✅ Production erfolgreich deployed!\n👤 Gestartet von: *${{ github.actor }}*\n⚙️ Workflow: ${{ github.workflow }}\n🏷️ Version: ${{ github.ref_name }}\n🌐 URL: http://${{ secrets.EC2_IPS_PROD }}\"}"
 
       - name: Slack - Deployment failed
         if: failure()
         run: |
           curl -s -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
             -H 'Content-type: application/json' \
-            --data "{\"text\":\"❌ *${{ github.workflow }}* fehlgeschlagen auf Prod! Ausgelöst von *${{ github.actor }}*\"}"
+            --data "{\"text\":\"❌ Production-Deployment FEHLGESCHLAGEN!\n👤 Gestartet von: *${{ github.actor }}*\n⚙️ Workflow: ${{ github.workflow }}\n🔗 Logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"

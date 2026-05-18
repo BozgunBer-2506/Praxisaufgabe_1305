@@ -17,7 +17,7 @@ jobs:
         run: |
           curl -s -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
             -H 'Content-type: application/json' \
-            --data "{\"text\":\"🚀 *${{ github.workflow }}* gestartet von *${{ github.actor }}* auf Branch \`main\`\"}"
+            --data "{\"text\":\"🚀 Staging-Pipeline gestartet\n👤 Gestartet von: *${{ github.actor }}*\n⚙️ Workflow: ${{ github.workflow }}\n🔗 Commit: ${{ github.sha }}\"}"
 
       - name: Fix permissions on server
         uses: appleboy/ssh-action@v1.0.3
@@ -43,11 +43,11 @@ jobs:
         run: |
           curl -s -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
             -H 'Content-type: application/json' \
-            --data "{\"text\":\"✅ *${{ github.workflow }}* erfolgreich abgeschlossen von *${{ github.actor }}*\"}"
+            --data "{\"text\":\"✅ Staging erfolgreich deployed!\n👤 Gestartet von: *${{ github.actor }}*\n⚙️ Workflow: ${{ github.workflow }}\n🌐 URL: http://${{ secrets.EC2_IP_STAGING }}\"}"
 
       - name: Slack - Deployment failed
         if: failure()
         run: |
           curl -s -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
             -H 'Content-type: application/json' \
-            --data "{\"text\":\"❌ *${{ github.workflow }}* fehlgeschlagen! Ausgelöst von *${{ github.actor }}*\"}"
+            --data "{\"text\":\"❌ Staging-Deployment FEHLGESCHLAGEN!\n👤 Gestartet von: *${{ github.actor }}*\n⚙️ Workflow: ${{ github.workflow }}\n🔗 Logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
