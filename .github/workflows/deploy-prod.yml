@@ -23,6 +23,8 @@ jobs:
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/deploy_key
           chmod 600 /tmp/deploy_key
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
 
           for IP in ${{ secrets.EC2_IPS_PROD }}; do
             echo "Deploying to $IP..."
